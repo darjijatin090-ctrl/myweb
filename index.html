@@ -1,27 +1,364 @@
 <!DOCTYPE html>
 <html lang="gu">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>મારી વેબસાઇટ</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      background-color: #eef6ff;
-      padding: 60px 20px;
-    }
-    h1 {
-      color: #1a4d8f;
-    }
-    p {
-      font-size: 20px;
-      color: #333;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vijay Hair & Beauty Lounge - Appointment બુક કરો</title>
+<meta name="description" content="વિજય હેર આર્ટ, નવરંગપુરા અમદાવાદ. ઓનલાઇન appointment બુક કરો.">
+<style>
+  :root{
+    --bg:#faf7f2; --card:#ffffff; --ink:#1f1a17; --muted:#6b625b;
+    --brand:#8a2b45; --brand-dark:#6d1f35; --gold:#c8963e;
+    --line:#e8e0d6; --ok:#1f7a4d; --bad:#b3261e; --soft:#f3ece3;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Noto Sans Gujarati","Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.55}
+  a{color:inherit}
+  .wrap{max-width:900px;margin:0 auto;padding:0 16px}
+  header.hero{background:linear-gradient(135deg,var(--brand),var(--brand-dark));color:#fff;padding:36px 0 40px;text-align:center}
+  .hero h1{margin:0;font-size:30px;letter-spacing:.3px}
+  .hero .gu{font-size:20px;opacity:.95;margin-top:4px}
+  .hero p{margin:12px auto 0;max-width:560px;opacity:.95}
+  .rate{display:inline-block;margin-top:14px;background:rgba(255,255,255,.15);padding:6px 14px;border-radius:999px;font-size:15px}
+  .actions{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:20px}
+  .btn{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:12px;padding:12px 20px;font-size:16px;font-weight:600;text-decoration:none;cursor:pointer;font-family:inherit}
+  .btn.primary{background:var(--gold);color:#1f1a17}
+  .btn.wa{background:#25d366;color:#073b1d}
+  .btn.call{background:#fff;color:var(--brand-dark)}
+  .btn.ghost{background:var(--soft);color:var(--ink)}
+  .btn:disabled{opacity:.55;cursor:not-allowed}
+  section{padding:28px 0}
+  h2{margin:0 0 14px;font-size:22px;color:var(--brand-dark)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+  label{display:block;font-weight:600;margin:14px 0 6px}
+  input[type=text],input[type=tel],select{width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;font-size:16px;font-family:inherit;background:#fff}
+  input:focus,select:focus{outline:2px solid var(--gold);border-color:var(--gold)}
+  .chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px}
+  .chip{flex:0 0 auto;border:1px solid var(--line);background:#fff;border-radius:12px;padding:8px 12px;font-size:14px;cursor:pointer;text-align:center;font-family:inherit;min-width:76px}
+  .chip.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+  .slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px}
+  .slot{border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 4px;font-size:14px;cursor:pointer;font-family:inherit}
+  .slot.on{background:var(--ok);color:#fff;border-color:var(--ok)}
+  .slot:disabled{background:#f1ece6;color:#9a9087;cursor:not-allowed;text-decoration:line-through}
+  .slot small{display:block;font-size:11px;text-decoration:none}
+  .note{font-size:13px;color:var(--muted);margin-top:8px}
+  .msg{margin-top:14px;padding:12px;border-radius:10px;font-size:15px;display:none}
+  .msg.ok{display:block;background:#e6f4ec;color:var(--ok)}
+  .msg.err{display:block;background:#fdecea;color:var(--bad)}
+  .warn{background:#fff4d6;color:#6b4e00;padding:12px;border-radius:10px;margin:14px 0;display:none}
+  ul.booked{list-style:none;margin:0;padding:0}
+  ul.booked li{display:flex;justify-content:space-between;padding:10px 4px;border-bottom:1px solid var(--line)}
+  ul.booked li:last-child{border-bottom:0}
+  .empty{color:var(--muted)}
+  .review{border-bottom:1px solid var(--line);padding:12px 0}
+  .review:last-child{border-bottom:0}
+  .review b{display:block}
+  .review small{color:var(--muted)}
+  .svc{display:flex;flex-wrap:wrap;gap:8px}
+  .svc span{background:var(--soft);padding:8px 14px;border-radius:999px;font-size:15px}
+  iframe{width:100%;height:300px;border:0;border-radius:12px}
+  footer{text-align:center;padding:24px 16px 90px;color:var(--muted);font-size:14px}
+  .float{position:fixed;right:14px;bottom:14px;display:flex;flex-direction:column;gap:10px;z-index:10}
+  .float a{width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;text-decoration:none;box-shadow:0 4px 12px rgba(0,0,0,.25)}
+  .float .w{background:#25d366}
+  .float .c{background:var(--brand);color:#fff}
+</style>
 </head>
 <body>
-  <h1>નમસ્તે! 🙏</h1>
-  <p>આ મારી પહેલી વેબસાઇટ છે.</p>
+
+<header class="hero">
+  <div class="wrap">
+    <h1 id="salonName"></h1>
+    <div class="gu" id="salonGu"></div>
+    <p id="tagline"></p>
+    <div class="rate" id="rating"></div>
+    <div class="actions">
+      <a class="btn primary" href="#book">📅 Appointment બુક કરો</a>
+      <a class="btn call" id="callBtn" href="#">📞 Call કરો</a>
+      <a class="btn wa" id="waBtn" href="#" target="_blank" rel="noopener">💬 WhatsApp</a>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section>
+    <h2>અમારી સેવાઓ</h2>
+    <div class="svc" id="services"></div>
+  </section>
+
+  <section id="book">
+    <h2>Appointment બુક કરો</h2>
+    <div class="card">
+      <div class="warn" id="cfgWarn">⚠️ વેબસાઇટનું Firebase હજી જોડાયું નથી. config.js માં Firebase ની માહિતી paste કરો.</div>
+
+      <label>૧. તારીખ પસંદ કરો</label>
+      <div class="chips" id="dates"></div>
+
+      <label>૨. સમય પસંદ કરો</label>
+      <div class="slots" id="slots"></div>
+      <div class="note">જે સમય કપાયેલો છે તે બુક થઈ ગયો છે.</div>
+
+      <label for="name">૩. તમારું નામ</label>
+      <input type="text" id="name" maxlength="40" placeholder="દા.ત. રમેશ પટેલ" autocomplete="name">
+
+      <label for="phone">૪. મોબાઇલ નંબર (10 અંક)</label>
+      <input type="tel" id="phone" maxlength="10" inputmode="numeric" placeholder="9876543210" autocomplete="tel">
+
+      <label for="service">૫. સેવા પસંદ કરો</label>
+      <select id="service"></select>
+
+      <div class="note">🔒 તમારું નામ અને સમય નીચેની યાદીમાં બધાને દેખાશે. મોબાઇલ નંબર ફક્ત દુકાનના માલિકને દેખાશે.</div>
+
+      <div style="margin-top:16px">
+        <button class="btn primary" id="submitBtn" style="width:100%;justify-content:center">✅ Appointment પાકી કરો</button>
+      </div>
+      <div class="msg" id="msg"></div>
+    </div>
+  </section>
+
+  <section>
+    <h2 id="bookedTitle">બુક થયેલી appointments</h2>
+    <div class="card">
+      <ul class="booked" id="bookedList"></ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>ગ્રાહકોના રિવ્યૂ</h2>
+    <div class="card">
+      <div id="reviews"></div>
+      <div style="margin-top:12px">
+        <a class="btn ghost" id="allReviews" href="#" target="_blank" rel="noopener">⭐ Google Maps પર બધા રિવ્યૂ જુઓ</a>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>અમારું સરનામું</h2>
+    <div class="card">
+      <p id="address" style="margin-top:0"></p>
+      <iframe id="map" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Google Map"></iframe>
+      <div style="margin-top:12px">
+        <a class="btn ghost" id="dirBtn" href="#" target="_blank" rel="noopener">🧭 રસ્તો બતાવો (Google Maps)</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer id="footer"></footer>
+
+<div class="float">
+  <a class="w" id="fWa" href="#" target="_blank" rel="noopener" aria-label="WhatsApp">💬</a>
+  <a class="c" id="fCall" href="#" aria-label="Call">📞</a>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, doc, writeBatch, onSnapshot, query, where, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { firebaseConfig, SALON } from "./config.js";
+
+const $ = (id) => document.getElementById(id);
+const pad = (n) => String(n).padStart(2, "0");
+const ymd = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const fmtTime = (hhmm) => {
+  const [h, m] = hhmm.split(":").map(Number);
+  const ap = h >= 12 ? "PM" : "AM";
+  const h12 = h % 12 === 0 ? 12 : h % 12;
+  return `${h12}:${pad(m)} ${ap}`;
+};
+const fmtDate = (s) => {
+  const [y, m, d] = s.split("-").map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString("gu-IN", { weekday: "short", day: "numeric", month: "short" });
+};
+
+/* ---------- સ્થિર માહિતી ભરવી ---------- */
+$("salonName").textContent = SALON.name;
+$("salonGu").textContent = SALON.nameGu;
+$("tagline").textContent = SALON.tagline;
+$("rating").textContent = `⭐ ${SALON.rating}  (${SALON.ratingCount} Google રિવ્યૂ)`;
+$("callBtn").href = `tel:${SALON.phone}`;
+$("fCall").href = `tel:${SALON.phone}`;
+const waMsg = encodeURIComponent("નમસ્તે, મારે appointment બુક કરવી છે.");
+$("waBtn").href = `https://wa.me/${SALON.whatsapp}?text=${waMsg}`;
+$("fWa").href = $("waBtn").href;
+$("address").textContent = `📍 ${SALON.address}  (${SALON.plusCode})`;
+const q = encodeURIComponent(SALON.mapsQuery);
+$("map").src = `https://www.google.com/maps?q=${q}&output=embed`;
+$("dirBtn").href = `https://www.google.com/maps/search/?api=1&query=${q}`;
+$("allReviews").href = `https://www.google.com/maps/search/?api=1&query=${q}`;
+$("footer").textContent = `© ${new Date().getFullYear()} ${SALON.name} • ${SALON.phoneDisplay}`;
+document.title = `${SALON.name} - Appointment બુક કરો`;
+
+SALON.services.forEach((s) => {
+  const sp = document.createElement("span"); sp.textContent = s; $("services").appendChild(sp);
+  const op = document.createElement("option"); op.value = s; op.textContent = s; $("service").appendChild(op);
+});
+
+SALON.reviews.forEach((r) => {
+  const div = document.createElement("div"); div.className = "review";
+  const b = document.createElement("b"); b.textContent = r.name;
+  const sm = document.createElement("small"); sm.textContent = r.when;
+  const p = document.createElement("p"); p.style.margin = "6px 0 0"; p.textContent = r.text;
+  div.append(b, sm, p); $("reviews").appendChild(div);
+});
+
+/* ---------- Firebase ---------- */
+const configured = !String(firebaseConfig.apiKey).startsWith("PASTE");
+let db = null;
+if (configured) {
+  db = getFirestore(initializeApp(firebaseConfig));
+} else {
+  $("cfgWarn").style.display = "block";
+}
+
+/* ---------- તારીખ અને સમય ---------- */
+let selectedDate = null;
+let selectedTime = null;
+let booked = {};            // { "10:00": "નામ" }
+let unsubscribe = null;
+
+function buildDates() {
+  const box = $("dates"); box.innerHTML = "";
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  for (let i = 0; i < SALON.daysAhead; i++) {
+    const d = new Date(today); d.setDate(today.getDate() + i);
+    if (SALON.closedWeekdays.includes(d.getDay())) continue;
+    const s = ymd(d);
+    const btn = document.createElement("button");
+    btn.type = "button"; btn.className = "chip"; btn.dataset.date = s;
+    btn.textContent = i === 0 ? "આજે" : i === 1 ? "આવતીકાલે" : fmtDate(s);
+    btn.addEventListener("click", () => chooseDate(s));
+    box.appendChild(btn);
+    if (!selectedDate) selectedDate = s;
+  }
+}
+
+function allTimes() {
+  const out = [];
+  for (let m = SALON.openHour * 60; m + SALON.slotMinutes <= SALON.closeHour * 60; m += SALON.slotMinutes) {
+    out.push(`${pad(Math.floor(m / 60))}:${pad(m % 60)}`);
+  }
+  return out;
+}
+
+function isPast(date, hhmm) {
+  const now = new Date();
+  if (date !== ymd(now)) return false;
+  const [h, m] = hhmm.split(":").map(Number);
+  return h * 60 + m <= now.getHours() * 60 + now.getMinutes() + 10;
+}
+
+function renderSlots() {
+  const box = $("slots"); box.innerHTML = "";
+  allTimes().forEach((t) => {
+    const btn = document.createElement("button");
+    btn.type = "button"; btn.className = "slot"; btn.textContent = fmtTime(t);
+    if (booked[t] !== undefined) {
+      btn.disabled = true;
+      const sm = document.createElement("small"); sm.textContent = "બુક થયેલ"; btn.appendChild(sm);
+    } else if (isPast(selectedDate, t)) {
+      btn.disabled = true;
+    } else {
+      if (t === selectedTime) btn.classList.add("on");
+      btn.addEventListener("click", () => { selectedTime = t; renderSlots(); });
+    }
+    box.appendChild(btn);
+  });
+  if (selectedTime && (booked[selectedTime] !== undefined || isPast(selectedDate, selectedTime))) selectedTime = null;
+}
+
+function renderBooked() {
+  const ul = $("bookedList"); ul.innerHTML = "";
+  $("bookedTitle").textContent = `બુક થયેલી appointments (${fmtDate(selectedDate)})`;
+  const times = Object.keys(booked).sort();
+  if (times.length === 0) {
+    const li = document.createElement("li"); li.className = "empty";
+    li.textContent = "આ દિવસે હજી કોઈ appointment નથી.";
+    ul.appendChild(li); return;
+  }
+  times.forEach((t) => {
+    const li = document.createElement("li");
+    const a = document.createElement("span"); a.textContent = booked[t];
+    const b = document.createElement("b"); b.textContent = fmtTime(t);
+    li.append(a, b); ul.appendChild(li);
+  });
+}
+
+function chooseDate(s) {
+  selectedDate = s; selectedTime = null; booked = {};
+  document.querySelectorAll("#dates .chip").forEach((c) => c.classList.toggle("on", c.dataset.date === s));
+  renderSlots(); renderBooked();
+  if (unsubscribe) { unsubscribe(); unsubscribe = null; }
+  if (!db) return;
+  unsubscribe = onSnapshot(
+    query(collection(db, "slots"), where("date", "==", s)),
+    (snap) => {
+      booked = {};
+      snap.forEach((d) => { const v = d.data(); booked[v.time] = v.name; });
+      renderSlots(); renderBooked();
+    },
+    () => showMsg("err", "માહિતી લોડ થઈ શકી નહીં. ઇન્ટરનેટ તપાસો અને પેજ refresh કરો.")
+  );
+}
+
+function showMsg(type, text) {
+  const m = $("msg"); m.className = `msg ${type}`; m.textContent = text;
+  m.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+/* ---------- Appointment પાકી કરવી ---------- */
+$("phone").addEventListener("input", (e) => { e.target.value = e.target.value.replace(/\D/g, "").slice(0, 10); });
+
+$("submitBtn").addEventListener("click", async () => {
+  if (!db) return showMsg("err", "વેબસાઇટ હજી તૈયાર નથી (Firebase જોડાયું નથી).");
+  const name = $("name").value.trim().replace(/\s+/g, " ");
+  const phone = $("phone").value.trim();
+  const service = $("service").value;
+
+  if (!selectedDate) return showMsg("err", "કૃપા કરીને તારીખ પસંદ કરો.");
+  if (!selectedTime) return showMsg("err", "કૃપા કરીને સમય પસંદ કરો.");
+  if (name.length < 2) return showMsg("err", "કૃપા કરીને તમારું નામ લખો.");
+  if (!/^[6-9]\d{9}$/.test(phone)) return showMsg("err", "કૃપા કરીને સાચો 10 અંકનો મોબાઇલ નંબર લખો.");
+
+  const btn = $("submitBtn"); btn.disabled = true; btn.textContent = "થોડી રાહ જુઓ...";
+  const id = `${selectedDate}_${selectedTime.replace(":", "")}`;
+  const date = selectedDate, time = selectedTime;
+  try {
+    const batch = writeBatch(db);
+    batch.set(doc(db, "slots", id), { date, time, name, createdAt: serverTimestamp() });
+    batch.set(doc(db, "appointments", id), { date, time, name, phone, service, createdAt: serverTimestamp() });
+    await batch.commit();
+
+    selectedTime = null;
+    $("name").value = ""; $("phone").value = "";
+    renderSlots();
+    const text = `નમસ્તે, મેં ${fmtDate(date)} ના ${fmtTime(time)} ની appointment બુક કરી છે. નામ: ${name}, સેવા: ${service}.`;
+    const m = $("msg"); m.className = "msg ok"; m.textContent = "";
+    m.append(`✅ ${name}, તમારી appointment પાકી થઈ ગઈ: ${fmtDate(date)}, ${fmtTime(time)}. `);
+    const a = document.createElement("a");
+    a.href = `https://wa.me/${SALON.whatsapp}?text=${encodeURIComponent(text)}`;
+    a.target = "_blank"; a.rel = "noopener"; a.textContent = "દુકાનને WhatsApp પર જણાવો";
+    m.appendChild(a);
+    m.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  } catch (err) {
+    if (err && err.code === "permission-denied") {
+      showMsg("err", "માફ કરશો, આ સમય હમણાં જ કોઈએ બુક કરી લીધો. કૃપા કરીને બીજો સમય પસંદ કરો.");
+    } else {
+      showMsg("err", "Appointment બુક થઈ શકી નહીં. ઇન્ટરનેટ તપાસીને ફરી પ્રયત્ન કરો અથવા દુકાનને call કરો.");
+    }
+  } finally {
+    btn.disabled = false; btn.textContent = "✅ Appointment પાકી કરો";
+  }
+});
+
+/* ---------- શરૂઆત ---------- */
+buildDates();
+if (selectedDate) chooseDate(selectedDate);
+// દર મિનિટે વીતી ગયેલા સમય અપડેટ કરો
+setInterval(() => { if (selectedDate) renderSlots(); }, 60000);
+</script>
 </body>
 </html>

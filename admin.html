@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>માલિક પેનલ - Vijay Hair & Beauty Lounge</title>
+<style>
+  :root{--bg:#f4f1ec;--card:#fff;--ink:#1f1a17;--muted:#6b625b;--brand:#8a2b45;--line:#e8e0d6;--ok:#1f7a4d;--bad:#b3261e}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Noto Sans Gujarati","Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
+  .wrap{max-width:720px;margin:0 auto;padding:16px}
+  h1{font-size:22px;margin:8px 0 14px;color:var(--brand)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+  label{display:block;font-weight:600;margin:12px 0 6px}
+  input[type=email],input[type=password]{width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;font-size:16px}
+  .btn{display:inline-block;border:0;border-radius:10px;padding:10px 16px;font-size:15px;font-weight:600;cursor:pointer;text-decoration:none;font-family:inherit}
+  .btn.p{background:var(--brand);color:#fff}
+  .btn.g{background:#eee6dc;color:var(--ink)}
+  .btn.w{background:#25d366;color:#073b1d}
+  .btn.c{background:#2563eb;color:#fff}
+  .btn.d{background:#fdecea;color:var(--bad)}
+  .btn:disabled{opacity:.55}
+  .err{color:var(--bad);margin-top:10px;font-size:14px}
+  .top{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+  .day{font-weight:700;font-size:17px;margin:18px 0 8px;color:var(--brand)}
+  .appt{border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px;background:#fff}
+  .appt .t{font-size:18px;font-weight:700}
+  .appt .m{color:var(--muted);font-size:14px;margin:2px 0 8px}
+  .row{display:flex;gap:8px;flex-wrap:wrap}
+  .stat{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+  .stat div{flex:1;min-width:130px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center}
+  .stat b{display:block;font-size:24px;color:var(--brand)}
+  .empty{color:var(--muted);padding:10px 0}
+  .hide{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🔐 માલિક પેનલ</h1>
+
+  <div class="card" id="loginBox">
+    <p style="margin-top:0">આ પેજ ફક્ત દુકાનના માલિક માટે છે.</p>
+    <label for="email">Email</label>
+    <input type="email" id="email" autocomplete="username">
+    <label for="pass">Password</label>
+    <input type="password" id="pass" autocomplete="current-password">
+    <div style="margin-top:14px"><button class="btn p" id="loginBtn">Login કરો</button></div>
+    <div class="err" id="loginErr"></div>
+  </div>
+
+  <div id="panel" class="hide">
+    <div class="top card">
+      <div><b id="who"></b></div>
+      <button class="btn g" id="logoutBtn">Logout</button>
+    </div>
+    <div class="stat">
+      <div><b id="sToday">0</b>આજની appointments</div>
+      <div><b id="sUp">0</b>આગામી કુલ</div>
+    </div>
+    <label style="display:flex;gap:8px;align-items:center;font-weight:500">
+      <input type="checkbox" id="showOld"> જૂની (વીતી ગયેલી) appointments પણ બતાવો
+    </label>
+    <div class="err" id="listErr"></div>
+    <div id="list"></div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, collection, doc, writeBatch, onSnapshot }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { firebaseConfig, SALON } from "./config.js";
+
+const $ = (id) => document.getElementById(id);
+const pad = (n) => String(n).padStart(2, "0");
+const ymd = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const fmtTime = (hhmm) => {
+  const [h, m] = hhmm.split(":").map(Number);
+  return `${h % 12 === 0 ? 12 : h % 12}:${pad(m)} ${h >= 12 ? "PM" : "AM"}`;
+};
+const fmtDate = (s) => {
+  const [y, m, d] = s.split("-").map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString("gu-IN", { weekday: "long", day: "numeric", month: "long" });
+};
+
+if (String(firebaseConfig.apiKey).startsWith("PASTE")) {
+  $("loginErr").textContent = "config.js માં Firebase ની માહિતી હજી paste કરી નથી.";
+  $("loginBtn").disabled = true;
+}
+
+let auth = null, db = null, unsub = null, items = [];
+if (!String(firebaseConfig.apiKey).startsWith("PASTE")) {
+  const app = initializeApp(firebaseConfig);
+  auth = getAuth(app);
+  db = getFirestore(app);
+
+  $("loginBtn").addEventListener("click", async () => {
+    $("loginErr").textContent = "";
+    const btn = $("loginBtn"); btn.disabled = true;
+    try {
+      await signInWithEmailAndPassword(auth, $("email").value.trim(), $("pass").value);
+    } catch (e) {
+      $("loginErr").textContent = "Email અથવા Password ખોટો છે.";
+    } finally { btn.disabled = false; }
+  });
+  $("pass").addEventListener("keydown", (e) => { if (e.key === "Enter") $("loginBtn").click(); });
+  $("logoutBtn").addEventListener("click", () => signOut(auth));
+  $("showOld").addEventListener("change", render);
+
+  onAuthStateChanged(auth, (user) => {
+    if (unsub) { unsub(); unsub = null; }
+    if (user) {
+      $("loginBox").classList.add("hide"); $("panel").classList.remove("hide");
+      $("who").textContent = user.email;
+      unsub = onSnapshot(collection(db, "appointments"),
+        (snap) => {
+          $("listErr").textContent = "";
+          items = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+          items.sort((a, b) => (a.id < b.id ? -1 : 1));
+          render();
+        },
+        () => { $("listErr").textContent = "આ account ને માહિતી જોવાની મંજૂરી નથી. સાચા માલિકના email થી login કરો."; }
+      );
+    } else {
+      $("panel").classList.add("hide"); $("loginBox").classList.remove("hide");
+      $("list").innerHTML = "";
+    }
+  });
+}
+
+function render() {
+  const today = ymd(new Date());
+  const showOld = $("showOld").checked;
+  const list = $("list"); list.innerHTML = "";
+  $("sToday").textContent = items.filter((i) => i.date === today).length;
+  $("sUp").textContent = items.filter((i) => i.date >= today).length;
+
+  const visible = items.filter((i) => showOld || i.date >= today);
+  if (visible.length === 0) {
+    const e = document.createElement("div"); e.className = "empty"; e.textContent = "કોઈ appointment નથી."; list.appendChild(e); return;
+  }
+  let lastDate = "";
+  visible.forEach((it) => {
+    if (it.date !== lastDate) {
+      lastDate = it.date;
+      const h = document.createElement("div"); h.className = "day";
+      h.textContent = (it.date === today ? "આજે - " : "") + fmtDate(it.date);
+      list.appendChild(h);
+    }
+    const card = document.createElement("div"); card.className = "appt";
+    const t = document.createElement("div"); t.className = "t"; t.textContent = `${fmtTime(it.time)} • ${it.name}`;
+    const m = document.createElement("div"); m.className = "m"; m.textContent = `${it.service} • 📱 ${it.phone}`;
+    const row = document.createElement("div"); row.className = "row";
+
+    const call = document.createElement("a"); call.className = "btn c"; call.textContent = "📞 Call"; call.href = `tel:+91${it.phone}`;
+    const wa = document.createElement("a"); wa.className = "btn w"; wa.textContent = "💬 WhatsApp"; wa.target = "_blank"; wa.rel = "noopener";
+    wa.href = `https://wa.me/91${it.phone}?text=${encodeURIComponent(`નમસ્તે ${it.name}, ${SALON.name} તરફથી. તમારી appointment ${fmtDate(it.date)} ના ${fmtTime(it.time)} ની છે.`)}`;
+    const del = document.createElement("button"); del.className = "btn d"; del.textContent = "✔ કામ પૂરું / Delete";
+    del.addEventListener("click", async () => {
+      if (!confirm(`${it.name} ની ${fmtTime(it.time)} ની appointment delete કરવી છે?`)) return;
+      del.disabled = true;
+      try {
+        const batch = writeBatch(db);
+        batch.delete(doc(db, "appointments", it.id));
+        batch.delete(doc(db, "slots", it.id));
+        await batch.commit();
+      } catch (e) {
+        del.disabled = false;
+        alert("Delete થઈ શક્યું નહીં. ઇન્ટરનેટ તપાસો.");
+      }
+    });
+    row.append(call, wa, del);
+    card.append(t, m, row);
+    list.appendChild(card);
+  });
+}
+</script>
+</body>
+</html>
